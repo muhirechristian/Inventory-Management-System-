@@ -46,7 +46,22 @@ export function SetupAdminPage({ onSetupSuccess, onNavigateLogin }: SetupAdminPa
       }
       onSetupSuccess(data.data);
     } catch {
-      setError('Network connection error. Check your server.');
+      // Secondary fallback to guarantee offline & Vercel standalone operation
+      try {
+        const { handleClientApiRequest } = await import('../../api/clientInterceptor.ts');
+        const fallbackRes = await handleClientApiRequest('/api/auth/setup', {
+          method: 'POST',
+          body: JSON.stringify({ name, email, password })
+        });
+        const fallbackData = await fallbackRes.json();
+        if (fallbackData.success) {
+          onSetupSuccess(fallbackData.data);
+          return;
+        }
+        setError(fallbackData.error || 'Setup failed');
+      } catch {
+        setError('Unable to complete setup. Please try again.');
+      }
       setLoading(false);
     }
   };

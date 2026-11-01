@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import bcrypt from 'bcryptjs';
+import { runDataSeeder } from './seedMoreData.ts';
 
 const DATA_DIR = path.resolve(process.cwd(), 'data');
 if (!fs.existsSync(DATA_DIR)) {
@@ -229,6 +230,7 @@ export function initDatabase() {
   `);
 
   seedInitialData();
+  runDataSeeder();
 }
 
 function seedInitialData() {

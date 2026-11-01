@@ -106,7 +106,7 @@ export function StockAdjustmentsView({ store, user }: { store: StoreKey; user: U
       setModalOpen(false);
       fetchTransfers();
     } catch {
-      setError('Network connection error.');
+      setError('Failed to process store transfer. Please try again.');
     }
   };
 

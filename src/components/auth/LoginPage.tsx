@@ -34,7 +34,22 @@ export function LoginPage({ onLoginSuccess, onNavigateSetup }: LoginPageProps) {
       }
       onLoginSuccess(data.data);
     } catch {
-      setError('Network connection error. Please try again.');
+      // Secondary fallback to guarantee offline & Vercel standalone operation
+      try {
+        const { handleClientApiRequest } = await import('../../api/clientInterceptor.ts');
+        const fallbackRes = await handleClientApiRequest('/api/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ username, password })
+        });
+        const fallbackData = await fallbackRes.json();
+        if (fallbackData.success) {
+          onLoginSuccess(fallbackData.data);
+          return;
+        }
+        setError(fallbackData.error || 'Invalid credentials');
+      } catch {
+        setError('Unable to authenticate. Please try again.');
+      }
       setLoading(false);
     }
   };
@@ -71,8 +86,23 @@ export function LoginPage({ onLoginSuccess, onNavigateSetup }: LoginPageProps) {
             </div>
           </div>
 
-          <div className="rounded-lg border border-[#E2E8F0] bg-white/60 p-3 text-xs text-[#64748B]">
-            <span className="font-semibold text-[#0F172A]">Demo Credentials:</span> Admin: <code className="font-mono text-[#0F172A]">admin</code> / <code className="font-mono text-[#0F172A]">admin123</code> | Staff: <code className="font-mono text-[#0F172A]">eric</code> / <code className="font-mono text-[#0F172A]">staff123</code>
+          <div className="rounded-lg border border-[#E2E8F0] bg-white/70 p-3 text-xs text-[#64748B] flex flex-wrap items-center gap-2">
+            <span className="font-semibold text-[#0F172A]">Quick Demo:</span>
+            <button
+              type="button"
+              onClick={() => { setUsername('admin'); setPassword('admin123'); setError(null); }}
+              className="rounded bg-[#14213D]/10 px-2 py-1 font-medium text-[#14213D] hover:bg-[#14213D]/20 transition cursor-pointer"
+            >
+              Admin (admin)
+            </button>
+            <button
+              type="button"
+              onClick={() => { setUsername('eric'); setPassword('staff123'); setError(null); }}
+              className="rounded bg-[#2563EB]/10 px-2 py-1 font-medium text-[#2563EB] hover:bg-[#2563EB]/20 transition cursor-pointer"
+            >
+              Staff (eric)
+            </button>
+            <span className="text-[#94A3B8] text-[11px] ml-auto">Cloud sync enabled</span>
           </div>
         </section>
 
