@@ -1,0 +1,151 @@
+@import "tailwindcss";
+
+:root {
+  --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+  
+  /* Codev Brand Color Palette */
+  --primary: #14213D;               /* Deep navy blue */
+  --primary-foreground: #FFFFFF;
+  --secondary: #2563EB;             /* Royal blue */
+  --secondary-foreground: #FFFFFF;
+  --accent: #14B8A6;                /* Teal */
+  --accent-foreground: #FFFFFF;
+  --background: #F8FAFC;            /* Main background */
+  --foreground: #0F172A;            /* Main text */
+  --card: #FFFFFF;                  /* Card background */
+  --card-foreground: #0F172A;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F172A;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;      /* Secondary text */
+  --border: #E2E8F0;                /* Borders */
+  --input: #CBD5E1;
+  --ring: #2563EB;
+  
+  /* Status Colors */
+  --success: #16A34A;               /* Success green */
+  --warning: #F59E0B;               /* Warning amber */
+  --destructive: #DC2626;           /* Danger red */
+  
+  /* Charts */
+  --chart-1: #14213D;
+  --chart-2: #2563EB;
+  --chart-3: #14B8A6;
+  --chart-4: #64748B;
+  --chart-5: #38BDF8;
+  
+  --radius: 0.8rem;
+  
+  /* Sidebar */
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #0F172A;
+  --sidebar-primary: #14213D;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #EFF6FF;
+  --sidebar-accent-foreground: #1E40AF;
+  --sidebar-border: #E2E8F0;
+  --sidebar-ring: #2563EB;
+
+  /* Codev Centralized Tokens */
+  --brand-navy: #14213D;
+  --brand-primary: #14213D;
+  --brand-secondary: #2563EB;
+  --brand-royal: #2563EB;
+  --brand-teal: #14B8A6;
+  --brand-accent: #14B8A6;
+  --brand-orange: #2563EB;          /* Retargeted to Codev royal blue */
+  --brand-orange-text: #2563EB;
+  --brand-charcoal: #64748B;
+  --viz-revenue: #2563EB;
+  --viz-cost: #64748B;
+  --viz-profit: #16A34A;
+  --viz-loss: #DC2626;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.brand-auth-surface {
+  isolation: isolate;
+  color-scheme: light;
+  --brand-navy: #14213D;
+  --brand-secondary: #2563EB;
+  --brand-teal: #14B8A6;
+  --brand-charcoal: #64748B;
+  --background: #F8FAFC;
+  --foreground: #0F172A;
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
+  --primary: #14213D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #2563EB;
+  --secondary-foreground: #FFFFFF;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+  --accent: #14B8A6;
+  --accent-foreground: #FFFFFF;
+  --border: #E2E8F0;
+  --input: #CBD5E1;
+  --ring: #2563EB;
+  background: linear-gradient(115deg, transparent 0 58%, color-mix(in srgb, #14213D 7%, transparent) 58% 74%, transparent 74%),
+              linear-gradient(155deg, color-mix(in srgb, #2563EB 8%, transparent) 0 16%, transparent 16%),
+              linear-gradient(90deg, color-mix(in srgb, #14213D 5%, transparent) 1px, transparent 1px),
+              linear-gradient(color-mix(in srgb, #14213D 5%, transparent) 1px, transparent 1px),
+              linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 42%, #F1F5F9 100%);
+  background-size: auto, auto, 36px 36px, 36px 36px, auto;
+  position: relative;
+  overflow: hidden;
+  color: var(--foreground);
+}
+
+.brand-auth-surface::before {
+  content: "";
+  z-index: -1;
+  pointer-events: none;
+  background: repeating-linear-gradient(135deg, transparent 0 112px, color-mix(in srgb, #14B8A6 14%, transparent) 112px 114px, transparent 114px 228px),
+              linear-gradient(90deg, color-mix(in srgb, #14213D 9%, transparent), transparent 28% 72%, color-mix(in srgb, #2563EB 8%, transparent));
+  position: absolute;
+  inset: 0;
+  opacity: 0.42;
+}
+
+.brand-auth-surface::after {
+  content: "";
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(90deg, #14B8A6 0 8rem, transparent 8rem),
+              linear-gradient(90deg, transparent 0 10rem, color-mix(in srgb, #14213D 15%, transparent) 10rem 100%);
+  height: 7rem;
+  position: absolute;
+  inset: auto 0 0;
+  opacity: 0.18;
+}
+
+.brand-auth-surface > * {
+  z-index: 1;
+  position: relative;
+}
+
+.brand-auth-surface .text-muted-foreground {
+  color: var(--brand-charcoal) !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
