@@ -230,7 +230,6 @@ export function initDatabase() {
   `);
 
   seedInitialData();
-  runDataSeeder();
 }
 
 function seedInitialData() {
@@ -589,6 +588,13 @@ function seedInitialData() {
     `);
     insertExp.run('exp_1', 'store1', 'user_admin_1', 'System Administrator', 'Truck Transport for Cement delivery from Nyabugogo', 45000, 'Transport', 'cash', 'Offloaded 200 bags');
     insertExp.run('exp_2', 'store1', 'user_staff_1', 'Eric Mugisha', 'Store consumables, cleaning supplies, and receipts paper', 12500, 'Maintenance', 'mobile', 'MoMo payment to supplier');
+  }
+
+  // Ensure extended mock hardware seed data is populated
+  try {
+    runDataSeeder();
+  } catch (seedErr) {
+    console.warn('[Codev Database] Extended seed warning:', seedErr);
   }
 }
 

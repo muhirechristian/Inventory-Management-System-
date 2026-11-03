@@ -326,7 +326,7 @@ export function ProductsView({ store, user }: ProductsViewProps) {
           </div>
 
           {/* Stock status filter buttons */}
-          <div className="flex items-center gap-1.5 self-start sm:self-auto">
+          <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1 sm:pb-0 self-start sm:self-auto shrink-0">
             <button
               onClick={() => setStockFilter('all')}
               className={`rounded-lg px-2.5 py-1.5 text-xs font-medium cursor-pointer transition ${stockFilter === 'all' ? 'bg-[#14213D] text-white' : 'bg-[#F1F5F9] text-[#64748B] hover:bg-[#E2E8F0]'}`}
@@ -390,13 +390,13 @@ export function ProductsView({ store, user }: ProductsViewProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredProducts.map((p) => {
+              filteredProducts.map((p, idx) => {
                 const threshold = p.threshold || p.minStock || 5;
                 const isOutOfStock = p.quantity <= 0;
                 const isLowStock = p.quantity > 0 && p.quantity <= threshold;
 
                 return (
-                  <TableRow key={p._id}>
+                  <TableRow key={p._id || p.id || p.sku || `product-${idx}`}>
                     <TableCell>
                       <div>
                         <p className="font-semibold text-sm text-[#0F172A]">{p.name}</p>

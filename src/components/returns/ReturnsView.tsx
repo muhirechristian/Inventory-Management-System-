@@ -162,37 +162,47 @@ export function ReturnsView({ store, user }: { store: StoreKey; user: User }) {
                 </TableCell>
               </TableRow>
             ) : (
-              returns.map((r) => (
-                <TableRow key={r._id}>
-                  <TableCell className="font-mono font-bold text-xs text-primary">
-                    {r.returnNumber}
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
-                    {formatInKigali(r.createdAt, { year: 'numeric', month: 'short', day: '2-digit' })}
-                  </TableCell>
-                  <TableCell className="font-semibold text-xs text-foreground">
-                    {r.customerName}
-                  </TableCell>
-                  <TableCell className="text-xs text-muted-foreground max-w-xs truncate">
-                    {r.reason}
-                  </TableCell>
-                  <TableCell className="text-xs">{r.createdByName || 'Staff'}</TableCell>
-                  <TableCell className="text-xs">{(r.items || []).length} item(s)</TableCell>
-                  <TableCell className="text-right font-mono font-bold text-xs text-red-600">
-                    -{formatCurrency(r.totalAmount)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSelectedReturn(r)}
-                      className="text-xs"
-                    >
-                      <Eye className="size-3.5 mr-1" /> View Items
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
+              returns.map((r, index) => {
+                const rowKey = r._id || r.id || (r as any).return_number || `ret-row-${index}`;
+                const returnNum = r.returnNumber || (r as any).return_number || 'RET-000';
+                const createdDate = r.createdAt || (r as any).created_at || new Date().toISOString();
+                const custName = r.customerName || (r as any).customer_name || 'Customer';
+                const staffName = r.createdByName || (r as any).user_name || 'Staff';
+                const retAmount = r.totalAmount ?? (r as any).total_amount ?? 0;
+                const itemsCount = (r.items || []).length;
+
+                return (
+                  <TableRow key={rowKey}>
+                    <TableCell className="font-mono font-bold text-xs text-primary">
+                      {returnNum}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {formatInKigali(createdDate, { year: 'numeric', month: 'short', day: '2-digit' })}
+                    </TableCell>
+                    <TableCell className="font-semibold text-xs text-foreground">
+                      {custName}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground max-w-xs truncate">
+                      {r.reason || 'Item return'}
+                    </TableCell>
+                    <TableCell className="text-xs">{staffName}</TableCell>
+                    <TableCell className="text-xs">{itemsCount} item(s)</TableCell>
+                    <TableCell className="text-right font-mono font-bold text-xs text-red-600">
+                      -{formatCurrency(retAmount)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedReturn(r)}
+                        className="text-xs"
+                      >
+                        <Eye className="size-3.5 mr-1" /> View Items
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
@@ -213,8 +223,8 @@ export function ReturnsView({ store, user }: { store: StoreKey; user: User }) {
               <p><span className="text-muted-foreground">Branch:</span> {STORE_LABELS[store]}</p>
             </div>
 
-            <div className="rounded-lg border border-border overflow-hidden">
-              <table className="w-full text-xs">
+            <div className="rounded-lg border border-border overflow-x-auto">
+              <table className="w-full min-w-[320px] text-xs">
                 <thead className="bg-muted/50 border-b border-border">
                   <tr>
                     <th className="p-2 text-left">Item</th>
@@ -224,7 +234,7 @@ export function ReturnsView({ store, user }: { store: StoreKey; user: User }) {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {(selectedReturn.items || []).map((it, idx) => (
-                    <tr key={idx}>
+                    <tr key={it.productId ? `${it.productId}-${idx}` : `return-item-${idx}`}>
                       <td className="p-2 font-medium">{it.name}</td>
                       <td className="p-2 text-center font-mono">{it.quantity} {it.unit}</td>
                       <td className="p-2 text-right font-mono font-bold text-red-700">{formatCurrency(it.totalAmount)}</td>

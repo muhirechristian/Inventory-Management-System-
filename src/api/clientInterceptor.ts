@@ -222,15 +222,13 @@ export async function handleClientApiRequest(urlStr: string, init?: RequestInit)
       data: {
         productCount: state.products.length,
         stockValue,
-        salesToday: {
-          count: salesToday.length,
-          revenue: totalRevenueToday,
-          profit: profitToday
-        },
-        returnsToday: { count: 0, total: returnsToday },
-        loansToday: { count: 0, total: loansToday },
-        expensesToday: { count: 0, total: expensesToday },
+        salesToday: salesToday.length,
+        revenueToday: totalRevenueToday,
+        returnsToday,
+        loansToday,
         costOfSalesToday,
+        expensesToday,
+        profitToday,
         paymentsByMethod,
         recentSales,
         topMoving
@@ -623,7 +621,28 @@ export async function handleClientApiRequest(urlStr: string, init?: RequestInit)
     const store = searchParams.get('store') || activeStore;
     const state = clientDb.getState();
     if (method === 'GET') {
-      return jsonResponse({ success: true, data: state.returns.filter(r => r.store_id === store) });
+      const data = state.returns.filter(r => r.store_id === store).map(r => ({
+        _id: r.id,
+        id: r.id,
+        returnNumber: (r as any).return_number || (r as any).returnNumber || 'RET-000',
+        saleId: (r as any).sale_id || (r as any).saleId,
+        storeId: r.store_id,
+        createdByName: (r as any).user_name || (r as any).createdByName || 'Staff',
+        customerName: (r as any).customer_name || (r as any).customerName || 'Customer',
+        reason: r.reason,
+        totalAmount: (r as any).total_amount ?? (r as any).totalAmount ?? 0,
+        returnStatus: (r as any).return_status || (r as any).returnStatus || 'completed',
+        createdAt: (r as any).created_at || (r as any).createdAt || new Date().toISOString(),
+        items: ((r as any).items || []).map((it: any) => ({
+          productId: it.product_id || it.productId,
+          name: it.product_name || it.name || 'Item',
+          unit: it.unit || 'pcs',
+          quantity: it.quantity || 1,
+          unitPrice: it.unit_price ?? it.unitPrice ?? 0,
+          totalAmount: it.total_amount ?? it.totalAmount ?? 0
+        }))
+      }));
+      return jsonResponse({ success: true, data });
     }
     if (method === 'POST') {
       const { saleId, customerName, reason, items } = body;
@@ -636,7 +655,7 @@ export async function handleClientApiRequest(urlStr: string, init?: RequestInit)
         user_name: sessionUser?.name || 'Admin',
         customer_name: customerName,
         reason,
-        total_amount: (items || []).reduce((acc: number, it: any) => acc + (it.unitPrice * it.quantity), 0),
+        total_amount: (items || []).reduce((acc: number, it: any) => acc + ((it.unitPrice || 0) * (it.quantity || 1)), 0),
         return_status: 'completed',
         created_at: new Date().toISOString(),
         items: items || []
@@ -649,7 +668,21 @@ export async function handleClientApiRequest(urlStr: string, init?: RequestInit)
           if (inv) inv.quantity += Number(it.quantity);
         }
       });
-      return jsonResponse({ success: true, data: newRet });
+      const formattedRet = {
+        _id: newRet.id,
+        id: newRet.id,
+        returnNumber: newRet.return_number,
+        saleId: newRet.sale_id,
+        storeId: newRet.store_id,
+        createdByName: newRet.user_name,
+        customerName: newRet.customer_name,
+        reason: newRet.reason,
+        totalAmount: newRet.total_amount,
+        returnStatus: newRet.return_status,
+        createdAt: newRet.created_at,
+        items: newRet.items
+      };
+      return jsonResponse({ success: true, data: formattedRet });
     }
   }
 
@@ -887,12 +920,26 @@ export async function handleClientApiRequest(urlStr: string, init?: RequestInit)
 
   // 19. PRODUCT REQUESTS
   if (pathname === '/api/product-requests' || pathname === '/api/product-requests/notifications') {
-    return jsonResponse({ success: true, count: 0, data: [] });
+    const state = clientDb.getState();
+    const reqs = state.product_requests || [];
+    return jsonResponse({ success: true, count: reqs.length, data: reqs });
   }
 
   // Default fallback
   return jsonResponse({ success: true, data: [] });
 }
+
+// Track whether backend is reachable
+const isVercelHost = typeof window !== 'undefined' && (
+  window.location.hostname.includes('vercel.app') ||
+  window.location.hostname.includes('now.sh')
+);
+
+let backendMode: 'unknown' | 'live' | 'standalone' = isVercelHost ? 'standalone' : 'unknown';
+
+const nativeFetch = typeof window !== 'undefined' && typeof window.fetch === 'function'
+  ? window.fetch.bind(window)
+  : (typeof fetch === 'function' ? fetch : async () => new Response('{}', { status: 500 }));
 
 // Global interceptor setup
 export const customFetch = async function (input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
@@ -903,41 +950,64 @@ export const customFetch = async function (input: RequestInfo | URL, init?: Requ
     return nativeFetch(input, init);
   }
 
-  // Call real backend first
-  try {
-    const response = await nativeFetch(input, init);
+  // If already confirmed standalone / Vercel static deployment: serve instantly with 0ms latency
+  if (backendMode === 'standalone') {
+    return handleClientApiRequest(url, init);
+  }
 
-    // If response is valid JSON (backend is live and answering)
+  // Probe live backend with a strict 1200ms timeout so the UI never hangs for 3+ seconds
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 1200);
+
+    const mergedInit: RequestInit = {
+      ...(init || {}),
+      signal: init?.signal ? init.signal : controller.signal
+    };
+
+    const response = await nativeFetch(input, mergedInit);
+    clearTimeout(timeoutId);
+
     const contentType = response.headers.get('content-type') || '';
     if (contentType.includes('application/json')) {
+      backendMode = 'live';
       return response;
     }
 
-    // If backend responded with HTML (e.g. 404 Not Found or static SPA index.html rewrite on Vercel)
-    console.info(`[Codev Engine] API ${url} received non-JSON (${response.status} ${contentType}). Activating standalone cloud engine.`);
+    // Backend returned HTML or non-JSON (typical on static Vercel rewrite or 404)
+    console.info(`[Codev Engine] API ${url} received non-JSON (${response.status} ${contentType}). Switching to standalone client engine.`);
+    backendMode = 'standalone';
     return handleClientApiRequest(url, init);
   } catch (networkError) {
-    // Network failure (server down, CORS, or completely offline)
-    console.info(`[Codev Engine] API ${url} unreachable (${(networkError as any)?.message}). Routing to standalone cloud engine.`);
+    // Network failure, timeout, or unreachable
+    console.info(`[Codev Engine] API ${url} unreachable. Operating in standalone client engine.`);
+    backendMode = 'standalone';
     return handleClientApiRequest(url, init);
   }
 };
 
-const nativeFetch = typeof window !== 'undefined' && typeof window.fetch === 'function' ? window.fetch.bind(window) : fetch;
-
+// Global monkey patching
 if (typeof window !== 'undefined') {
   let patched = false;
+
+  // Attempt 1: Window.prototype (where fetch standardly lives)
   try {
-    Object.defineProperty(window, 'fetch', {
-      value: customFetch,
-      writable: true,
-      configurable: true,
-      enumerable: true
-    });
-    patched = true;
-  } catch {
+    const proto = Object.getPrototypeOf(window) || Window.prototype;
+    if (proto && 'fetch' in proto) {
+      Object.defineProperty(proto, 'fetch', {
+        value: customFetch,
+        writable: true,
+        configurable: true,
+        enumerable: true
+      });
+      patched = true;
+    }
+  } catch {}
+
+  // Attempt 2: Direct window object
+  if (!patched) {
     try {
-      Object.defineProperty(Window.prototype, 'fetch', {
+      Object.defineProperty(window, 'fetch', {
         value: customFetch,
         writable: true,
         configurable: true,
@@ -948,22 +1018,17 @@ if (typeof window !== 'undefined') {
       try {
         (window as any).fetch = customFetch;
         patched = true;
-      } catch {
-        // Safe catch: Sandboxed iframe with read-only window.fetch getter
-      }
+      } catch {}
     }
   }
 
   try {
     (window as any).codevFetch = customFetch;
-  } catch {
-    // ignore
-  }
+  } catch {}
 
   if (patched) {
-    console.info('[Codev Engine] Dual-mode network interceptor activated.');
-  } else {
-    console.info('[Codev Engine] Protected iframe environment detected; native backend proxy active.');
+    console.info(`[Codev Engine] Network interceptor activated (${isVercelHost ? 'Vercel Standalone' : 'Dual-mode'}).`);
   }
 }
+
 

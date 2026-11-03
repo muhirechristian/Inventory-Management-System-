@@ -39,7 +39,7 @@ export function Dialog({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-6 overflow-y-auto">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
@@ -48,7 +48,7 @@ export function Dialog({
 
       {/* Modal Dialog Content */}
       <div
-        className={`relative z-10 w-full ${maxWidth} rounded-2xl border border-border/80 bg-white p-6 shadow-2xl transition-all my-8 max-h-[90vh] flex flex-col`}
+        className={`relative z-10 w-full max-w-[calc(100vw-1.25rem)] ${maxWidth} rounded-2xl border border-border/80 bg-white p-4 sm:p-6 shadow-2xl transition-all my-auto max-h-[92vh] flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between pb-3 border-b border-border/60">

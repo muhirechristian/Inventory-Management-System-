@@ -159,8 +159,8 @@ export function UsersView({ currentUser }: { currentUser: User }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.map((u) => (
-              <TableRow key={u._id}>
+            {users.map((u, idx) => (
+              <TableRow key={u._id || u.id || `user-${idx}`}>
                 <TableCell>
                   <p className="font-semibold text-xs text-[#0F172A]">{u.name}</p>
                 </TableCell>
@@ -223,8 +223,8 @@ export function UsersView({ currentUser }: { currentUser: User }) {
                 </TableCell>
               </TableRow>
             ) : (
-              loginLogs.map((log) => (
-                <TableRow key={log._id}>
+              loginLogs.map((log, idx) => (
+                <TableRow key={log._id || log.id || `log-${idx}`}>
                   <TableCell className="font-semibold text-xs text-[#0F172A]">{log.name}</TableCell>
                   <TableCell className="text-xs text-[#64748B] font-mono">{log.email}</TableCell>
                   <TableCell className="text-xs capitalize">{log.role}</TableCell>

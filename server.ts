@@ -12,8 +12,11 @@ const __dirname = path.dirname(__filename);
 // Initialize DB schema & seed data
 initDatabase();
 
+import http from 'http';
+
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const server = http.createServer(app);
 const JWT_SECRET = process.env.JWT_SECRET || 'codev_business_secret_key_2026';
 
 app.use(express.json());
@@ -1475,7 +1478,10 @@ const isProd = process.env.NODE_ENV === 'production';
 if (!isProd) {
   const { createServer } = await import('vite');
   const vite = await createServer({
-    server: { middlewareMode: true },
+    server: {
+      middlewareMode: true,
+      hmr: process.env.DISABLE_HMR === 'true' ? false : undefined,
+    },
     appType: 'spa',
   });
   app.use(vite.middlewares);
@@ -1486,6 +1492,10 @@ if (!isProd) {
   });
 }
 
-app.listen(PORT, '0.0.0.0', () => {
+server.on('error', (err: any) => {
+  console.error('[Codev] Server listener error:', err.message || err);
+});
+
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`[Codev] Server running on http://0.0.0.0:${PORT}`);
 });

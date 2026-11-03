@@ -119,12 +119,12 @@ export function LoansView({ store, user }: { store: StoreKey; user: User }) {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredLoans.map((l) => {
+              filteredLoans.map((l, idx) => {
                 const remaining = Math.max(0, l.amount - (l.paidAmount || 0));
                 const isOverdue = l.status !== 'paid' && new Date(l.dueDate) < new Date();
 
                 return (
-                  <TableRow key={l._id}>
+                  <TableRow key={l._id || l.id || `loan-${idx}`}>
                     <TableCell>
                       <p className="font-semibold text-xs text-foreground">{l.customerName}</p>
                       {l.customerPhone && <p className="text-[11px] text-muted-foreground">{l.customerPhone}</p>}

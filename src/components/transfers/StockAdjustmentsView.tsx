@@ -172,8 +172,8 @@ export function StockAdjustmentsView({ store, user }: { store: StoreKey; user: U
                 </TableCell>
               </TableRow>
             ) : (
-              transfers.map((t) => (
-                <TableRow key={t._id}>
+              transfers.map((t, idx) => (
+                <TableRow key={t._id || t.id || t.adjustmentNumber || `transfer-${idx}`}>
                   <TableCell className="font-mono font-bold text-xs text-primary">
                     {t.adjustmentNumber}
                   </TableCell>
@@ -220,7 +220,7 @@ export function StockAdjustmentsView({ store, user }: { store: StoreKey; user: U
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <label className="block space-y-1 text-xs font-semibold">
               Source Store (From)
               <select

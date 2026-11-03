@@ -920,4 +920,3 @@ export function runDataSeeder() {
   console.log('[Codev Seeder] Dataset inserted successfully!');
 }
 
-runDataSeeder();

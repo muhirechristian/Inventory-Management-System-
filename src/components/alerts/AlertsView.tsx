@@ -79,12 +79,12 @@ export function AlertsView({ store, user, onNavigateTab }: AlertsViewProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              alerts.map((item) => {
+              alerts.map((item, idx) => {
                 const isZero = item.quantity <= 0;
                 const deficit = Math.max(0, (item.threshold * 2) - item.quantity);
 
                 return (
-                  <TableRow key={item._id}>
+                  <TableRow key={item._id || item.id || item.sku || `alert-${idx}`}>
                     <TableCell>
                       <div>
                         <p className="font-semibold text-xs text-foreground">{item.name}</p>

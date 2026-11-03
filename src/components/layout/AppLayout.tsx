@@ -18,7 +18,9 @@ import {
   AlertTriangle,
   ClipboardCheck,
   CheckCircle2,
-  Store
+  Store,
+  Menu,
+  X
 } from 'lucide-react';
 import { Button } from '../ui/Button.tsx';
 import { CodevLogo } from '../common/CodevLogo.tsx';
@@ -58,6 +60,7 @@ export function AppLayout({
   onLogout,
   children
 }: AppLayoutProps) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [loanNotifs, setLoanNotifs] = useState<any[]>([]);
   const [requestNotifs, setRequestNotifs] = useState<any[]>([]);
@@ -103,6 +106,12 @@ export function AppLayout({
     return () => document.removeEventListener('pointerdown', handleClickOutside);
   }, []);
 
+  // Close mobile drawer on route / tab change
+  const handleTabSelect = (tab: ActiveTab) => {
+    onTabChange(tab);
+    setMobileMenuOpen(false);
+  };
+
   const totalNotifCount = loanNotifs.length + (user.isAdmin ? requestNotifs.length : 0);
 
   // Exact 13 items preserved with exact lucide icons
@@ -135,36 +144,45 @@ export function AppLayout({
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-[#0F172A]">
       {/* Top Header */}
-      <header className="sticky top-0 z-40 border-b border-[#E2E8F0] bg-white/95 backdrop-blur-md px-4 py-2.5 sm:px-6">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-          {/* Logo & Brand Title: Codev */}
-          <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-40 border-b border-[#E2E8F0] bg-white/95 backdrop-blur-md px-3 sm:px-6 py-2.5">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 sm:gap-4">
+          {/* Left: Mobile Menu Toggle + Logo & Brand */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden rounded-lg p-1.5 text-[#64748B] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition cursor-pointer"
+              aria-label="Open navigation menu"
+            >
+              <Menu className="size-5" />
+            </button>
+
             <CodevLogo size="sm" />
             <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-lg text-[#14213D] tracking-tight">Codev</span>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="font-bold text-base sm:text-lg text-[#14213D] tracking-tight">Codev</span>
                 <span className="hidden sm:inline-flex rounded-md bg-[#2563EB]/10 px-2 py-0.5 text-[10px] font-bold uppercase text-[#2563EB]">
                   Business Suite
                 </span>
               </div>
-              <p className="text-xs text-[#64748B] hidden sm:block">Business & inventory management across stores</p>
+              <p className="text-[11px] sm:text-xs text-[#64748B] hidden sm:block">Business & inventory management across stores</p>
             </div>
           </div>
 
           {/* Right Header: Store Switcher, Notifications, User info, Logout */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             {/* Store Switcher */}
             <div className="relative">
-              <div className="flex items-center gap-2 rounded-xl border border-[#2563EB]/25 bg-[#2563EB]/5 px-3 py-1.5 shadow-xs transition hover:bg-[#2563EB]/10">
-                <Store className="size-4 text-[#2563EB]" />
+              <div className="flex items-center gap-1.5 sm:gap-2 rounded-xl border border-[#2563EB]/25 bg-[#2563EB]/5 px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-xs transition hover:bg-[#2563EB]/10">
+                <Store className="size-3.5 sm:size-4 text-[#2563EB] shrink-0" />
                 <span className="text-xs text-[#64748B] hidden md:inline">Branch:</span>
                 <select
                   value={activeStore}
                   onChange={(e) => onStoreChange(e.target.value as StoreKey)}
-                  className="bg-transparent font-semibold text-sm text-[#14213D] outline-none cursor-pointer pr-1"
+                  className="bg-transparent font-semibold text-xs sm:text-sm text-[#14213D] outline-none cursor-pointer pr-1"
                 >
-                  <option value="store1">Gisozi (Store 1)</option>
-                  <option value="store2">Kinyinya (Store 2)</option>
+                  <option value="store1">Gisozi</option>
+                  <option value="store2">Kinyinya</option>
                 </select>
               </div>
             </div>
@@ -174,22 +192,22 @@ export function AppLayout({
               <button
                 type="button"
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
-                className="relative rounded-lg p-2 text-[#64748B] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition cursor-pointer"
+                className="relative rounded-lg p-1.5 sm:p-2 text-[#64748B] hover:bg-[#F1F5F9] hover:text-[#0F172A] transition cursor-pointer"
                 aria-label="Notifications"
               >
-                <Bell className="size-5" />
+                <Bell className="size-4 sm:size-5" />
                 {totalNotifCount > 0 && (
-                  <span className="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-[#2563EB] text-[10px] font-bold text-white shadow-xs">
+                  <span className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 flex size-3.5 sm:size-4 items-center justify-center rounded-full bg-[#2563EB] text-[9px] sm:text-[10px] font-bold text-white shadow-xs">
                     {totalNotifCount}
                   </span>
                 )}
               </button>
 
               {notificationsOpen && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border border-[#E2E8F0] bg-white p-4 shadow-xl z-50">
-                  <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
-                    <h4 className="font-semibold text-sm text-[#0F172A]">Notifications & Alerts</h4>
-                    <span className="text-xs text-[#64748B]">{STORE_LABELS[activeStore]}</span>
+                <div className="absolute right-0 mt-2 w-72 sm:w-80 md:w-96 rounded-2xl border border-[#E2E8F0] bg-white p-3 sm:p-4 shadow-xl z-50">
+                  <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-[#E2E8F0]">
+                    <h4 className="font-semibold text-xs sm:text-sm text-[#0F172A]">Notifications & Alerts</h4>
+                    <span className="text-[11px] sm:text-xs text-[#64748B]">{STORE_LABELS[activeStore]}</span>
                   </div>
 
                   <div className="divide-y divide-[#E2E8F0] max-h-80 overflow-y-auto mt-2">
@@ -197,7 +215,7 @@ export function AppLayout({
                     {lowStockCount > 0 && (
                       <div
                         onClick={() => {
-                          onTabChange('alerts');
+                          handleTabSelect('alerts');
                           setNotificationsOpen(false);
                         }}
                         className="py-2.5 flex items-start gap-2.5 hover:bg-[#F1F5F9] p-2 rounded-lg cursor-pointer transition"
@@ -214,7 +232,7 @@ export function AppLayout({
                     {user.isAdmin && requestNotifs.length > 0 && (
                       <div
                         onClick={() => {
-                          onTabChange('products');
+                          handleTabSelect('products');
                           setNotificationsOpen(false);
                         }}
                         className="py-2.5 flex items-start gap-2.5 hover:bg-[#F1F5F9] p-2 rounded-lg cursor-pointer transition"
@@ -233,7 +251,7 @@ export function AppLayout({
                         <div
                           key={l.id}
                           onClick={() => {
-                            onTabChange('outstanding');
+                            handleTabSelect('outstanding');
                             setNotificationsOpen(false);
                           }}
                           className="py-2.5 flex items-start gap-2.5 hover:bg-[#F1F5F9] p-2 rounded-lg cursor-pointer transition"
@@ -260,8 +278,8 @@ export function AppLayout({
               )}
             </div>
 
-            {/* User Profile Pill */}
-            <div className="hidden sm:flex items-center gap-2 pl-2 border-l border-[#E2E8F0]">
+            {/* User Profile Info (tablet/desktop) */}
+            <div className="hidden md:flex items-center gap-2 pl-2 border-l border-[#E2E8F0]">
               <div className="text-right">
                 <p className="text-xs font-semibold text-[#0F172A] leading-tight">{user.name}</p>
                 <p className="text-[11px] text-[#64748B]">{roleLabels[user.role] || user.role}</p>
@@ -273,20 +291,118 @@ export function AppLayout({
               variant="outline"
               size="sm"
               onClick={onLogout}
-              className="text-xs text-[#64748B] hover:text-[#0F172A]"
+              className="text-xs text-[#64748B] hover:text-[#0F172A] px-2 sm:px-3"
             >
-              <LogOut className="size-3.5 mr-1" />
+              <LogOut className="size-3.5 sm:mr-1" />
               <span className="hidden sm:inline">Sign out</span>
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Main Workspace Layout: Sidebar + Main View */}
-      <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6">
+      {/* Mobile Drawer (Slide-Over Navigation Menu) */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+
+          {/* Drawer Content */}
+          <div className="fixed inset-y-0 left-0 w-72 sm:w-80 bg-white shadow-2xl flex flex-col z-50 p-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
+              <div className="flex items-center gap-2">
+                <CodevLogo size="sm" />
+                <span className="font-bold text-base text-[#14213D]">Codev Suite</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-lg p-1.5 text-[#64748B] hover:bg-[#F1F5F9] transition cursor-pointer"
+                aria-label="Close menu"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            {/* User & Store Summary in Mobile Drawer */}
+            <div className="py-3 border-b border-[#E2E8F0] space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#64748B]">Active Store:</span>
+                <select
+                  value={activeStore}
+                  onChange={(e) => {
+                    onStoreChange(e.target.value as StoreKey);
+                  }}
+                  className="text-xs font-bold text-[#14213D] border border-[#2563EB]/30 bg-[#2563EB]/10 rounded-md px-2 py-1 outline-none"
+                >
+                  <option value="store1">Gisozi (Store 1)</option>
+                  <option value="store2">Kinyinya (Store 2)</option>
+                </select>
+              </div>
+              <div className="rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] p-2.5">
+                <p className="text-xs font-semibold text-[#0F172A]">{user.name}</p>
+                <p className="text-[11px] text-[#64748B]">{roleLabels[user.role] || user.role}</p>
+              </div>
+            </div>
+
+            {/* Nav Links in Drawer */}
+            <nav className="flex-1 overflow-y-auto py-2 space-y-1">
+              {filteredNavItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleTabSelect(item.id)}
+                    className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs sm:text-sm font-medium transition cursor-pointer ${
+                      isActive
+                        ? 'bg-[#14213D] text-white shadow-sm font-semibold'
+                        : 'text-[#64748B] hover:bg-[#F1F5F9] hover:text-[#0F172A]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Icon className={`size-4 shrink-0 ${isActive ? 'text-white' : 'text-[#64748B]'}`} />
+                      <span>{item.label}</span>
+                    </div>
+                    {item.badge !== undefined && item.badge > 0 && (
+                      <span
+                        className={`rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
+                          isActive ? 'bg-[#14B8A6] text-white' : 'bg-red-100 text-red-700'
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Drawer Logout */}
+            <div className="pt-3 border-t border-[#E2E8F0]">
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onLogout();
+                }}
+                className="w-full flex items-center justify-center gap-2 rounded-lg py-2 px-3 text-xs font-semibold text-[#DC2626] hover:bg-red-50 transition cursor-pointer"
+              >
+                <LogOut className="size-4" />
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Workspace Layout: Sidebar (Tablet/Desktop) + Main Viewport */}
+      <div className="mx-auto w-full max-w-7xl flex-1 px-3 sm:px-6 py-4 sm:py-6 pb-20 md:pb-6">
         <div className="flex flex-col gap-6 md:flex-row md:items-start">
-          {/* Sidebar */}
-          <aside className="w-full shrink-0 rounded-2xl border border-[#E2E8F0] bg-white/95 p-3 backdrop-blur-sm shadow-sm md:sticky md:top-20 md:h-fit md:w-64">
+          {/* Sidebar (Tablet & Desktop only: md:block) */}
+          <aside className="hidden md:block w-56 lg:w-64 shrink-0 rounded-2xl border border-[#E2E8F0] bg-white/95 p-3 backdrop-blur-sm shadow-sm md:sticky md:top-20 md:h-fit">
             <div className="mb-3 border-b border-[#E2E8F0] px-2 pb-2.5">
               <p className="text-[10px] uppercase tracking-[0.2em] font-semibold text-[#64748B]">
                 Codev Suite
@@ -294,7 +410,7 @@ export function AppLayout({
               <h2 className="text-base font-bold text-[#14213D]">Control Center</h2>
             </div>
 
-            <nav className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 md:flex md:flex-col">
+            <nav className="flex flex-col gap-1">
               {filteredNavItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
@@ -336,13 +452,65 @@ export function AppLayout({
             </div>
 
             {/* Footer matching requirement: Powered by Codev */}
-            <footer className="mt-12 py-4 border-t border-[#E2E8F0] text-center text-xs text-[#64748B] flex items-center justify-between">
+            <footer className="mt-8 sm:mt-12 py-4 border-t border-[#E2E8F0] text-center text-xs text-[#64748B] flex flex-col sm:flex-row items-center justify-between gap-2">
               <span>Codev — Business & Inventory Management Platform</span>
               <span className="font-medium text-[#14213D]">Powered by Codev</span>
             </footer>
           </main>
         </div>
       </div>
+
+      {/* Mobile Bottom Quick Navigation Bar (Phone only: md:hidden) */}
+      <nav className="fixed bottom-0 inset-x-0 z-30 flex md:hidden items-center justify-around bg-white/95 backdrop-blur-md border-t border-[#E2E8F0] py-2 px-1 shadow-lg">
+        <button
+          type="button"
+          onClick={() => handleTabSelect('dashboard')}
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-medium transition cursor-pointer ${
+            activeTab === 'dashboard' ? 'text-[#2563EB] font-bold' : 'text-[#64748B]'
+          }`}
+        >
+          <LayoutDashboard className="size-4" />
+          <span>Dashboard</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => handleTabSelect('sales')}
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-medium transition cursor-pointer ${
+            activeTab === 'sales' ? 'text-[#2563EB] font-bold' : 'text-[#64748B]'
+          }`}
+        >
+          <ReceiptText className="size-4" />
+          <span>Sales</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => handleTabSelect('products')}
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-medium transition cursor-pointer ${
+            activeTab === 'products' ? 'text-[#2563EB] font-bold' : 'text-[#64748B]'
+          }`}
+        >
+          <PackageSearch className="size-4" />
+          <span>Products</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => handleTabSelect('invoices')}
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-medium transition cursor-pointer ${
+            activeTab === 'invoices' ? 'text-[#2563EB] font-bold' : 'text-[#64748B]'
+          }`}
+        >
+          <FileText className="size-4" />
+          <span>Invoices</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileMenuOpen(true)}
+          className="flex flex-col items-center gap-0.5 text-[10px] font-medium text-[#64748B] hover:text-[#0F172A] transition cursor-pointer"
+        >
+          <Menu className="size-4" />
+          <span>More</span>
+        </button>
+      </nav>
     </div>
   );
 }

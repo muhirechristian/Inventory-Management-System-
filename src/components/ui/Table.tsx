@@ -29,7 +29,7 @@ export function TableRow({ children, className = '', onClick }: { children: Reac
 
 export function TableHead({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <th className={`h-11 px-4 text-left align-middle font-semibold text-muted-foreground whitespace-nowrap text-xs uppercase tracking-wider ${className}`}>
+    <th className={`h-10 sm:h-11 px-3 sm:px-4 text-left align-middle font-semibold text-muted-foreground whitespace-nowrap text-[11px] sm:text-xs uppercase tracking-wider ${className}`}>
       {children}
     </th>
   );
@@ -37,7 +37,7 @@ export function TableHead({ children, className = '' }: { children: React.ReactN
 
 export function TableCell({ children, className = '', colSpan }: { children?: React.ReactNode; className?: string; colSpan?: number }) {
   return (
-    <td colSpan={colSpan} className={`p-4 align-middle whitespace-nowrap text-foreground ${className}`}>
+    <td colSpan={colSpan} className={`p-3 sm:p-4 align-middle whitespace-nowrap text-xs sm:text-sm text-foreground ${className}`}>
       {children}
     </td>
   );

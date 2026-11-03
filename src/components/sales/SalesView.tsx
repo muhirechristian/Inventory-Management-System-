@@ -354,8 +354,8 @@ export function SalesView({ store, user, onNavigateInvoice }: SalesViewProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredSales.map((s) => (
-                <TableRow key={s._id}>
+              filteredSales.map((s, idx) => (
+                <TableRow key={s._id || s.id || s.saleNumber || `sale-${idx}`}>
                   <TableCell className="font-mono font-bold text-xs text-[#2563EB]">
                     {s.saleNumber}
                   </TableCell>
@@ -483,8 +483,8 @@ export function SalesView({ store, user, onNavigateInvoice }: SalesViewProps) {
               </button>
             </div>
 
-            <div className="rounded-xl border border-[#E2E8F0] overflow-hidden bg-white">
-              <table className="w-full text-xs">
+            <div className="rounded-xl border border-[#E2E8F0] overflow-x-auto bg-white">
+              <table className="w-full min-w-[550px] text-xs">
                 <thead className="bg-[#F8FAFC] border-b border-[#E2E8F0]">
                   <tr>
                     <th className="p-2.5 text-left font-semibold text-[#0F172A]">Product</th>

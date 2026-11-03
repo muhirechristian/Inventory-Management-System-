@@ -151,8 +151,8 @@ export function CustomersSuppliersView({ user }: { user: User }) {
                 </TableCell>
               </TableRow>
             ) : (
-              filtered.map((item) => (
-                <TableRow key={item._id}>
+              filtered.map((item, idx) => (
+                <TableRow key={item._id || item.id || `cs-${idx}`}>
                   <TableCell>
                     <p className="font-semibold text-xs text-[#0F172A]">{item.name}</p>
                     {item.notes && <p className="text-[11px] text-[#64748B]">{item.notes}</p>}

@@ -76,12 +76,37 @@ export function DashboardView({ store, user, onNavigateTab }: DashboardViewProps
     topMoving: []
   };
 
-  const profit = f.profitToday ?? 0;
+  // Resilient numeric extraction (guarantees no objects are ever rendered in JSX)
+  const salesCount = typeof f.salesToday === 'object' && f.salesToday !== null 
+    ? (f.salesToday.count ?? 0) 
+    : (Number(f.salesToday) || 0);
+
+  const revenueVal = typeof f.revenueToday === 'number' 
+    ? f.revenueToday 
+    : (typeof f.salesToday === 'object' && f.salesToday !== null ? (f.salesToday.revenue ?? 0) : (Number(f.revenueToday) || 0));
+
+  const returnsVal = typeof f.returnsToday === 'object' && f.returnsToday !== null 
+    ? (f.returnsToday.total ?? 0) 
+    : (Number(f.returnsToday) || 0);
+
+  const loansVal = typeof f.loansToday === 'object' && f.loansToday !== null 
+    ? (f.loansToday.total ?? 0) 
+    : (Number(f.loansToday) || 0);
+
+  const costOfSalesVal = Number(f.costOfSalesToday) || 0;
+
+  const expensesVal = typeof f.expensesToday === 'object' && f.expensesToday !== null 
+    ? (f.expensesToday.total ?? 0) 
+    : (Number(f.expensesToday) || 0);
+
+  const profitVal = typeof f.profitToday === 'number' 
+    ? f.profitToday 
+    : (revenueVal - costOfSalesVal - expensesVal - returnsVal);
 
   const statCards = [
     {
       label: 'Products',
-      value: f.productCount ?? 0,
+      value: Number(f.productCount) || 0,
       icon: Package,
       className: 'border-[#E2E8F0] bg-white text-[#0F172A]',
       iconClassName: 'text-[#2563EB]',
@@ -89,7 +114,7 @@ export function DashboardView({ store, user, onNavigateTab }: DashboardViewProps
     },
     {
       label: 'Total Stock Value',
-      value: formatCurrency(f.stockValue ?? 0),
+      value: formatCurrency(Number(f.stockValue) || 0),
       icon: Layers,
       className: 'border-blue-200 bg-blue-50/60 text-[#14213D]',
       iconClassName: 'text-[#2563EB]',
@@ -97,7 +122,7 @@ export function DashboardView({ store, user, onNavigateTab }: DashboardViewProps
     },
     {
       label: 'Sales Today',
-      value: f.salesToday ?? 0,
+      value: salesCount,
       icon: ReceiptText,
       className: 'border-[#E2E8F0] bg-white text-[#0F172A]',
       iconClassName: 'text-[#14213D]',
@@ -105,7 +130,7 @@ export function DashboardView({ store, user, onNavigateTab }: DashboardViewProps
     },
     {
       label: 'Revenue Today',
-      value: formatCurrency(f.revenueToday ?? 0),
+      value: formatCurrency(revenueVal),
       icon: TrendingUp,
       className: 'border-emerald-200 bg-emerald-50/70 text-emerald-950',
       iconClassName: 'text-[#16A34A]',
@@ -113,7 +138,7 @@ export function DashboardView({ store, user, onNavigateTab }: DashboardViewProps
     },
     {
       label: "Today's Returns",
-      value: `-${formatCurrency(f.returnsToday ?? 0)}`,
+      value: `-${formatCurrency(returnsVal)}`,
       icon: RotateCcw,
       className: 'border-red-200 bg-red-50/70 text-red-950',
       iconClassName: 'text-[#DC2626]',
@@ -121,7 +146,7 @@ export function DashboardView({ store, user, onNavigateTab }: DashboardViewProps
     },
     {
       label: "Today's Loans",
-      value: formatCurrency(f.loansToday ?? 0),
+      value: formatCurrency(loansVal),
       icon: Clock,
       className: 'border-amber-200 bg-amber-50/70 text-amber-950',
       iconClassName: 'text-[#F59E0B]',
@@ -129,7 +154,7 @@ export function DashboardView({ store, user, onNavigateTab }: DashboardViewProps
     },
     {
       label: 'Cost of Sales',
-      value: formatCurrency(f.costOfSalesToday ?? 0),
+      value: formatCurrency(costOfSalesVal),
       icon: ShoppingCart,
       className: 'border-slate-200 bg-slate-50/80 text-[#0F172A]',
       iconClassName: 'text-[#64748B]',
@@ -137,7 +162,7 @@ export function DashboardView({ store, user, onNavigateTab }: DashboardViewProps
     },
     {
       label: 'Expenses Today',
-      value: formatCurrency(f.expensesToday ?? 0),
+      value: formatCurrency(expensesVal),
       icon: Wallet,
       className: 'border-rose-200 bg-rose-50/70 text-rose-950',
       iconClassName: 'text-rose-600',
@@ -145,10 +170,10 @@ export function DashboardView({ store, user, onNavigateTab }: DashboardViewProps
     },
     {
       label: 'Profit Today',
-      value: formatCurrency(profit),
+      value: formatCurrency(profitVal),
       icon: DollarSign,
-      className: profit >= 0 ? 'border-teal-200 bg-teal-50/80 text-teal-950' : 'border-amber-200 bg-amber-50/80 text-amber-950',
-      iconClassName: profit >= 0 ? 'text-[#14B8A6]' : 'text-[#F59E0B]',
+      className: profitVal >= 0 ? 'border-teal-200 bg-teal-50/80 text-teal-950' : 'border-amber-200 bg-amber-50/80 text-amber-950',
+      iconClassName: profitVal >= 0 ? 'text-[#14B8A6]' : 'text-[#F59E0B]',
       adminOnly: true
     },
     {
@@ -206,19 +231,21 @@ export function DashboardView({ store, user, onNavigateTab }: DashboardViewProps
       </div>
 
       {/* 12 Stat Cards Grid */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 sm:grid-cols-3 lg:grid-cols-4">
         {visibleCards.map((card) => {
           const Icon = card.icon;
           return (
             <div
               key={card.label}
-              className={`rounded-2xl border p-4 shadow-xs transition hover:shadow-sm ${card.className}`}
+              className={`rounded-2xl border p-3 sm:p-4 shadow-xs transition hover:shadow-sm ${card.className}`}
             >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium opacity-80">{card.label}</span>
-                <Icon className={`size-4 ${card.iconClassName}`} />
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[11px] sm:text-xs font-medium opacity-80 truncate">{card.label}</span>
+                <Icon className={`size-3.5 sm:size-4 shrink-0 ${card.iconClassName}`} />
               </div>
-              <p className="mt-2 text-xl font-bold tracking-tight">{card.value}</p>
+              <p className="mt-1.5 sm:mt-2 text-base sm:text-lg lg:text-xl font-bold tracking-tight truncate" title={String(card.value)}>
+                {card.value}
+              </p>
             </div>
           );
         })}
@@ -261,7 +288,7 @@ export function DashboardView({ store, user, onNavigateTab }: DashboardViewProps
                   </TableRow>
                 ) : (
                   f.recentSales.map((s: any, idx: number) => (
-                    <TableRow key={s._id} className={idx % 2 === 1 ? 'bg-[#F8FAFC]' : ''}>
+                    <TableRow key={s._id || s.id || `sale-${idx}`} className={idx % 2 === 1 ? 'bg-[#F8FAFC]' : ''}>
                       <TableCell className="font-medium text-xs">
                         {formatInKigali(s.createdAt, { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
                         <span className="block text-[11px] text-[#64748B]">{s.customerName}</span>

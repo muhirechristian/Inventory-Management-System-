@@ -175,8 +175,8 @@ export function ExpensesView({ store, user }: { store: StoreKey; user: User }) {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredExpenses.map((exp) => (
-                <TableRow key={exp._id}>
+              filteredExpenses.map((exp, idx) => (
+                <TableRow key={exp._id || exp.id || `exp-${idx}`}>
                   <TableCell className="text-xs font-mono text-muted-foreground">
                     {exp.date}
                   </TableCell>

@@ -209,8 +209,8 @@ export function InvoicesView({ store, user }: InvoicesViewProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredInvoices.map((inv) => (
-                <TableRow key={inv._id}>
+              filteredInvoices.map((inv, idx) => (
+                <TableRow key={inv._id || inv.id || inv.invoiceNumber || `inv-${idx}`}>
                   <TableCell className="font-mono font-bold text-xs text-[#2563EB]">
                     {inv.invoiceNumber}
                   </TableCell>
@@ -263,34 +263,34 @@ export function InvoicesView({ store, user }: InvoicesViewProps) {
         >
           <div className="space-y-6 p-2 printable-area">
             {/* Branded Letterhead: Codev */}
-            <div className="flex items-start justify-between border-b-2 border-[#14213D] pb-4">
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-3 border-b-2 border-[#14213D] pb-4">
               <div className="flex items-center gap-3">
                 <CodevLogo size="lg" />
                 <div>
-                  <h2 className="text-xl font-bold text-[#14213D]">CODEV ENTERPRISE SOLUTIONS</h2>
+                  <h2 className="text-lg sm:text-xl font-bold text-[#14213D]">CODEV ENTERPRISE SOLUTIONS</h2>
                   <p className="text-xs text-[#64748B]">Business & Inventory Management Platform</p>
                   <p className="text-xs text-[#64748B]">{STORE_LABELS[store]} Branch Operations</p>
                   <p className="text-xs text-[#64748B]">TIN: 104829103 | Tel: +250 788 123 456</p>
                 </div>
               </div>
-              <div className="text-right">
-                <h3 className="text-lg font-black uppercase text-[#2563EB] tracking-wider">
+              <div className="text-left sm:text-right">
+                <h3 className="text-base sm:text-lg font-black uppercase text-[#2563EB] tracking-wider">
                   {selectedInvoice.type === 'dn' ? 'DELIVERY NOTE' : selectedInvoice.type === 'proforma' ? 'PROFORMA INVOICE' : 'COMMERCIAL INVOICE'}
                 </h3>
                 <p className="font-mono text-sm font-bold text-[#14213D] mt-1">{selectedInvoice.invoiceNumber}</p>
-                <p className="text-xs text-[#64748B] mt-1">Date: {selectedInvoice.issueDate}</p>
+                <p className="text-xs text-[#64748B] mt-0.5">Date: {selectedInvoice.issueDate}</p>
               </div>
             </div>
 
             {/* Bill To Info */}
-            <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4 grid grid-cols-2 gap-4 text-xs">
+            <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3 sm:p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs">
               <div>
                 <p className="font-bold text-[#64748B] uppercase text-[10px] tracking-wider mb-1">Customer / Consignee</p>
-                <p className="font-bold text-base text-[#0F172A]">{selectedInvoice.customerName}</p>
+                <p className="font-bold text-sm sm:text-base text-[#0F172A]">{selectedInvoice.customerName}</p>
                 {selectedInvoice.customerPhone && <p className="text-[#64748B]">Tel: {selectedInvoice.customerPhone}</p>}
                 {selectedInvoice.customerEmail && <p className="text-[#64748B]">Email: {selectedInvoice.customerEmail}</p>}
               </div>
-              <div className="text-right">
+              <div className="text-left sm:text-right">
                 <p className="font-bold text-[#64748B] uppercase text-[10px] tracking-wider mb-1">Issuing Details</p>
                 <p className="text-[#0F172A]"><span className="text-[#64748B]">Branch:</span> {STORE_LABELS[store]}</p>
                 <p className="text-[#0F172A]"><span className="text-[#64748B]">System:</span> Verified via Codev</p>
@@ -298,8 +298,8 @@ export function InvoicesView({ store, user }: InvoicesViewProps) {
             </div>
 
             {/* Items Table */}
-            <div className="rounded-xl border border-[#E2E8F0] overflow-hidden">
-              <table className="w-full text-xs">
+            <div className="rounded-xl border border-[#E2E8F0] overflow-x-auto">
+              <table className="w-full min-w-[420px] text-xs">
                 <thead className="bg-[#F8FAFC] border-b border-[#E2E8F0]">
                   <tr>
                     <th className="p-3 text-left font-bold text-[#0F172A]">Item Description</th>

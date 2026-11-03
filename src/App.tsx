@@ -28,20 +28,38 @@ export default function App() {
   const checkSession = async () => {
     try {
       const res = await fetch('/api/auth/session');
-      const data = await res.json();
-      if (data.success && data.user) {
-        setCurrentUser(data.user);
-        if (data.user.activeStore) {
-          setActiveStore(data.user.activeStore as StoreKey);
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const data = await res.json();
+        if (data.success && data.user) {
+          setCurrentUser(data.user);
+          if (data.user.activeStore) {
+            setActiveStore(data.user.activeStore as StoreKey);
+          }
+          setAuthChecked(true);
+          return;
         }
-      } else {
-        setCurrentUser(null);
       }
-    } catch {
-      setCurrentUser(null);
-    } finally {
-      setAuthChecked(true);
+    } catch (e) {
+      console.warn('Primary session check failed, evaluating local state', e);
     }
+
+    // Fallback: Check local storage session user (for standalone & Vercel hosting)
+    try {
+      const { clientDb } = await import('./api/clientDb.ts');
+      const localUser = clientDb.getSessionUser();
+      if (localUser) {
+        setCurrentUser(localUser);
+        if (localUser.activeStore) {
+          setActiveStore(localUser.activeStore as StoreKey);
+        }
+        setAuthChecked(true);
+        return;
+      }
+    } catch {}
+
+    setCurrentUser(null);
+    setAuthChecked(true);
   };
 
   useEffect(() => {
